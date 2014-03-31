@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+
+  <!-- strings 30000 thru 30999 reserved for plugins and plugin settings -->
+
+  <!-- settings dialog: 30000-30099 -->
+  <string id="30000">Allgemein</string>
+  <string id="30001">Benutzername</string>
+  <string id="30002">Passwort</string>
+  <string id="30003">Bevorzugte Streaming-Qualität</string>
+  <string id="30010">Erweitert</string>
+  <string id="30011">View Mode erzwingen</string>
+  <string id="30012">View Mode ID</string>
+  <string id="30013">Content Type erzwingen</string>
+  <string id="30014">Content Type</string>
+  <string id="30015">Vorschaubilder als Fan-Art benutzen</string>
+  <string id="30016">Vorschaubilder lokal zwischenspeichern</string>
+  <string id="30017">Alle Details zu einer Sendung anzeigen (langsam!)</string>
+
+  <!-- view: "/": 30100-30199 -->
+  <string id="30100">Mein BongSpace</string>
+  <string id="30101">TV-Programm</string>
+  <string id="30102">Sendung suchen</string>
+
+  <!-- view "/view/recordings":  30200-30299  -->
+  <string id="30200">Liste der Aufnahmen auffrischen</string>
+  <string id="30201">Aufnahme löschen</string>
+  <string id="30202">Anstehend</string>
+
+  <!-- view "/view/channels":  30300-30399  -->
+  <!-- nothing -->
+
+  <!-- view "/view/search-epg": 30400-30499  -->
+  <!-- nothing -->
+
+  <!-- view "/view/broadcasts-per-channel":  30500-30599  -->
+  <string id="30500"> .. Nächste Sendungen</string>
+
+  <!-- action "/action/create-recording": 30600-30699 -->
+  <string id="30600">'{title}' erfolgreich programmiert!</string>
+  <string id="30601">Aufnahme fehlgeschlagen</string>
+  <string id="30602">BongSpace voll, Aufnahme kann nicht programmiert werden!</string>
+  <string id="30603">Aufnahme kann nicht programmiert werden!</string>
+  <string id="30604">Bitte zuerst Aufnahmen aus dem BongSpace löschen.</string>
+  <string id="30605">Ja, zu meinen Aufnahmen wechseln</string>
+  <string id="30606">Nein, hier bleiben</string>
+
+  <!-- action "/action/delete-recording": 30700-30799 -->
+  <string id="30700">Aufnahme löschen?</string>
+  <string id="30701">'{title}' aus dem BongSpace löschen?</string>
+  <string id="30702">'{title}' erfolgreich aus dem BongSpace gelöscht!</string>
+
+</strings>
