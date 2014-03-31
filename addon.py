@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import os
 
 import xbmcswift2
 from xbmcswift2 import actions
@@ -12,7 +13,26 @@ from lib import pybongtvapi
 plugin = xbmcswift2.Plugin()
 addon_icon = plugin._addon.getAddonInfo("icon")
 
+pybongtvapi.COOKIE_PATH = os.path.join(os.path.dirname(plugin.storage_path), "..", ".pybongtvapi.session-cookie")
+
 CONTENT_TYPES = VIDEOS, EPISODES, MOVIES = "videos", "episodes", "movies"
+
+
+def tr(string_id, **kw):
+    return plugin.get_string(int(string_id)).encode("utf-8").format(**kw)
+
+
+def redirect(url):
+    xbmc.executebuiltin(actions.update_view(url))
+
+
+def on_authentication_error(yeslabel=None, nolabel=None, url=None):
+    if xbmcgui.Dialog().yesno(tr(30018), tr(30019), line3=tr(30020), yeslabel=yeslabel or '', nolabel=nolabel or ''):
+        if os.path.isfile(pybongtvapi.COOKIE_PATH):
+            os.remove(pybongtvapi.COOKIE_PATH)
+        plugin.open_settings()
+        if url:
+            redirect(url)
 
 
 class Settings(object):
@@ -42,15 +62,15 @@ class Settings(object):
 
     @property
     def username(self):
-        while not plugin.get_setting("username", converter=str):
-            plugin.open_settings()
-        return plugin.get_setting("username", converter=str)
+        # when username is not set, then 'foo' will trigger an authentication error, and
+        # user is prompted to re-enter his username
+        return plugin.get_setting("username", converter=str) or 'foo'
 
     @property
     def password(self):
-        while not plugin.get_setting("password", converter=str):
-            plugin.open_settings()
-        return plugin.get_setting("password", converter=str)
+        # when password is not set, then 'foo' will trigger an authentication error, and
+        # user is prompted to re-enter his password
+        return plugin.get_setting("password", converter=str) or 'foo'
 
     @property
     def preferred_qualities(self):
@@ -73,10 +93,6 @@ class API(object):
     @property
     def pvr(self):
         return pybongtvapi.PVR(self.api)
-
-
-def tr(string_id, **kw):
-    return plugin.get_string(int(string_id)).encode("utf-8").format(**kw)
 
 
 def get_broadcasts(channel_id, offset=0):
@@ -116,8 +132,6 @@ def get_broadcast_details(broadcast):
 
 def new_image_url(url, timeout=None, default="DefaultVideo.png"):
     if url:
-        import os
-
         thumbs_dir = os.path.join(os.path.dirname(plugin.storage_path), "..", "thumbs")
         if not os.path.isdir(thumbs_dir):
             os.makedirs(thumbs_dir)
@@ -193,7 +207,7 @@ def action_create_recording(broadcast_id):
         assert recording is not None
     except pybongtvapi.CannotCreateRecordingError:
         if xbmcgui.Dialog().yesno(tr(30601), tr(30602), tr(30604), yeslabel=tr(30605), nolabel=tr(30606)):
-            xbmc.executebuiltin(actions.update_view(plugin.url_for("view_recordings")))
+            redirect(plugin.url_for('view_recordings'))
     except (pybongtvapi.Error, AssertionError):
         xbmcgui.Dialog().ok(tr(30601), tr(30603))
     else:
@@ -205,7 +219,7 @@ def action_create_recording(broadcast_id):
 def action_delete_recording(recording_id, recording_title):
     if xbmcgui.Dialog().yesno(tr(30700), tr(30701, title=recording_title)):
         API().pvr.delete_recording(int(recording_id))
-        xbmc.executebuiltin(actions.update_view(plugin.url_for("view_recordings")))
+        redirect(plugin.url_for('view_recordings'))
         plugin.notify(tr(30702, title=recording_title), image=addon_icon)
 
 
@@ -238,9 +252,12 @@ def view_recordings():
                 title_prefix = tr(30202)
             yield make_list_item(recording, path, is_playable=is_playable, context_menu=context_menu, title_prefix=title_prefix)
 
-
-    items = tuple(produce_items())
-    return finish(items, content_type=EPISODES)
+    try:
+        items = tuple(produce_items())
+    except pybongtvapi.AuthenticationError:
+        on_authentication_error(url=plugin.url_for('view_recordings'))
+    else:
+        return finish(items, content_type=EPISODES)
 
 
 @plugin.route("/view/channels")
@@ -250,8 +267,12 @@ def view_channels():
             path = plugin.url_for("view_broadcasts_per_channel", channel_id=channel.channel_id, offset=0)
             yield dict(label=channel.name, icon=channel.logo_url, thumbnail=channel.logo_url, path=path)
 
-    items = tuple(produce_items())
-    return finish(items, content_type=VIDEOS)
+    try:
+        items = tuple(produce_items())
+    except pybongtvapi.AuthenticationError:
+        on_authentication_error(url=plugin.url_for('view_channels'))
+    else:
+        return finish(items, content_type=VIDEOS)
 
 
 @plugin.route("/view/search-epg")
@@ -262,7 +283,10 @@ def view_search_epg():
             path = plugin.url_for("action_create_recording", broadcast_id=broadcast.broadcast_id)
             yield make_list_item(broadcast, path, bg_image_url=broadcast.channel_logo_url)
 
-    items = tuple(produce_items())
+    try:
+        items = tuple(produce_items())
+    except pybongtvapi.AuthenticationError:
+        on_authentication_error(url=plugin.url_for('view_search_epg'))
     return finish(items, content_type=EPISODES)
 
 

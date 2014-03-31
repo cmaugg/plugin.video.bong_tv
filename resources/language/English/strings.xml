@@ -14,8 +14,11 @@
   <string id="30013">Force Content Type</string>
   <string id="30014">Content Type</string>
   <string id="30015">Use thumb image as fan art</string>
-  <string id="30016">Cache thumb images locally</string>
-  <string id="30017">Show all available broadcast details (slow!)</string>
+  <string id="30016">Cache thumb images locally (slow!)</string>
+  <string id="30017">Show all available broadcast details</string>
+  <string id="30018">Authentification Error</string>
+  <string id="30019">Username and password not set or mispelled.</string>
+  <string id="30020">Open Settings?</string>
 
   <!-- view: "/": 30100-30199 -->
   <string id="30100">My BongSpace</string>

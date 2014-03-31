@@ -14,8 +14,11 @@
   <string id="30013">Content Type erzwingen</string>
   <string id="30014">Content Type</string>
   <string id="30015">Vorschaubilder als Fan-Art benutzen</string>
-  <string id="30016">Vorschaubilder lokal zwischenspeichern</string>
-  <string id="30017">Alle Details zu einer Sendung anzeigen (langsam!)</string>
+  <string id="30016">Vorschaubilder lokal zwischenspeichern (langsam!)</string>
+  <string id="30017">Alle Details zu einer Sendung anzeigen</string>
+  <string id="30018">Authentifizierungsfehler</string>
+  <string id="30019">Benutzername und -passwort falsch oder nicht gesetzt.</string>
+  <string id="30020">Einstellungen öffnen?</string>
 
   <!-- view: "/": 30100-30199 -->
   <string id="30100">Mein BongSpace</string>

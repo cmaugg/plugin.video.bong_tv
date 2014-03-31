@@ -72,7 +72,7 @@ def _sanitize(value):
 
 # read config
 _config_parser = ConfigParser.SafeConfigParser()
-_COOKIE_PATH = os.path.join(tempfile.gettempdir(), ".pybongtvapi.session-cookie")
+COOKIE_PATH = os.path.join(tempfile.gettempdir(), ".pybongtvapi.session-cookie")
 
 # the default configuration file (contains all properties)
 DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__), "pybongtvapi.ini")
@@ -186,9 +186,9 @@ class API(object):
         self.username = username
         self.password = password
         
-        if os.path.isfile(_COOKIE_PATH):
+        if os.path.isfile(COOKIE_PATH):
             # yes, that's correct: the setter loads the cookie from cookie_path!
-            self._set_cookie(_COOKIE_PATH)
+            self._set_cookie(COOKIE_PATH)
 
     def _set_username(self, value):
         """ 
@@ -254,7 +254,7 @@ class API(object):
             raise TypeError()
         if isinstance(cookie, _Cookie):
             setattr(self, "__cookie__", cookie)
-            with open(_COOKIE_PATH, mode="wt") as f:
+            with open(COOKIE_PATH, mode="wt") as f:
                 f.write(str(cookie))
 
     def _get_cookie(self):

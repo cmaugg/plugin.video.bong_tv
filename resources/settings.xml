@@ -16,9 +16,9 @@
     <setting type="sep" />
     <setting label="30015" id="use_thumb_as_fanart" type="bool" default="false" />
     <setting type="sep" />
-    <setting label="30016" id="cache_thumbs_locally" type="bool" default="true" />
+    <setting label="30016" id="cache_thumbs_locally" type="bool" default="false" />
     <setting type="sep" />
-    <setting label="30017" id="use_extended_broadcast_details" type="bool" default="false" />
+    <setting label="30017" id="use_extended_broadcast_details" type="bool" default="true" />
 
   </category>
 </settings>
