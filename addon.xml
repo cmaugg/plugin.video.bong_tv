@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.bong_tv" name="BONG.TV" version="1.0.0" provider-name="Christian Maugg">
+<addon id="plugin.video.bong_tv" name="BONG.TV" version="2.0" provider-name="Christian Maugg">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmcswift2" version="2.4.0"/>
@@ -9,19 +9,15 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
+        <language>de en</language>
         <summary lang="de">BONG.TV - Dein persönlicher Cloud-Rekorder</summary>
-        <summary lang="en">BONG.TV - Your personal cloud recorder</summary>
-        <language>de fr</language>
-        <description lang="de">Ein Plugin zur komfortablen Nutzung der BONG.TV-Plattform. Benötigt einen BONG.TV-Account - ohne Kosten und unverbindlich für einen Testzeitraum von sieben Tagen erhältlich online unter www.bong.tv.
-
-          BONG.TV ist dein TV Programm und dein persönlicher Videorekorder in der Hosentasche. Ohne zusätzliche Hardware ist es möglich Privataufzeichnungen deutscher TV Sendungen, Filme und Blockbuster deiner Wahl in höchster Qualität aufzuzeichnen und diese anzusehen wann und wo du willst. Unverbindlich und kostenlos steht jedem Nutzer ein Testzeitraum von 7 Tagen zur Verfügung. Dieser gibt Einblick in den modernsten Videorekorder mit all seinen umfassenden Funktionen. Bereits bestehende BONG.TV Nutzer können sich mit Nutzername und Passwort zu Ihrem Videorekorder verbinden.</description>
-        <description lang="en">A plugin for comfortable use of the BONG.TV platform. Requires a BONG.TV account, free of charge and non-binding for a test period of 7 days available online at www.bong.tv.
-
-          BONG.TV is your TV guide and personal video recorder in a pocket. Without additional hardware, it is possible to record german TV broadcasts, movies and blockbusters of your choice in highest quality, wherever and whenever you want. A test period of 7 days - free of charge and non-binding - is available, delivers insight into the latest video recorder with all its comprehensive functions. Registered BONG.TV users can log on with their username and password.</description>
-        <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-        <source>https://github.com/ChristianMaugg/plugin.video.bong_tv</source>
-        <forum>TODO</forum>
-        <email>xbmc-addons@christianmaugg.de</email>
-        <website>http://xbmc-addons.christianmaugg.de</website>
+        <summary lang="en">BONG.TV - your personal cloud video recorder</summary>
+        <description lang="de">BONG.TV ist dein TV Programm und dein persönlicher Videorekorder. Es können Privataufzeichnungen deutscher TV-Sendungen, Filme und Blockbuster deiner Wahl in höchster Qualität aufgezeichnet werden. Du kannst diese ansehen wann und wo du willst. Benötigt einen BONG.TV-Account.</description>
+        <description lang="en">BONG.TV is your TV program and personal video recorder. It allows you to record german tv shows, movies and blockbusters of your choice in best quality and watch it and anytime and anywhere. A BONG.TV account is required.</description>
+        <license>MIT License</license>
+        <source>https://github.com/cmaugg/plugin.video.bong_tv/tags/2.0</source>
+        <forum>https://github.com/cmaugg/plugin.video.bong_tv/wiki</forum>
+        <email>software@christianmaugg.de</email>
+        <website>https://github.com/cmaugg/plugin.video.bong_tv</website>
     </extension>
 </addon>
