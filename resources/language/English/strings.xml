@@ -1,56 +1,41 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
 
-  <!-- strings 30000 thru 30999 reserved for plugins and plugin settings -->
+    <!-- strings 30000 - 30999 reserved for plugins and plugin settings -->
 
-  <!-- settings dialog: 30000-30099 -->
-  <string id="30000">General</string>
-  <string id="30001">Username</string>
-  <string id="30002">Password</string>
-  <string id="30003">Preferred Streaming Quality</string>
-  <string id="30010">Advanced</string>
-  <string id="30011">Force View Mode</string>
-  <string id="30012">View Mode ID</string>
-  <string id="30013">Force Content Type</string>
-  <string id="30014">Content Type</string>
-  <string id="30015">Use thumb image as fan art</string>
-  <string id="30016">Cache thumb images locally (slow!)</string>
-  <string id="30017">Show all available broadcast details</string>
-  <string id="30018">Authentification Error</string>
-  <string id="30019">Username and password not set or mispelled.</string>
-  <string id="30020">Open Settings?</string>
+    <!-- addon stuff: [30000..30499] -->
+    <string id="30000">Authorization Error!</string>
+    <string id="30001">Please update your BONG.TV username and password</string>
+    <string id="30002">BongSpace</string>
+    <string id="30003">BongGuide</string>
+    <string id="30004">Search broadcasts</string>
+    <string id="30005">{0} broadcasts recorded</string>
+    <string id="30006">Manage {0} broadcasts</string>
+    <string id="30007">No recordings found!</string>
+    <string id="30008">Delete recording?</string>
+    <string id="30009">Delete recording "{0}"?</string>
+    <string id="30010">Cannot delete recording "{0}"!</string>
+    <string id="30011">"{0}" deleted successfully</string>
+    <string id="30012">Record broadcast?</string>
+    <string id="30013">Record broadcast "{0}"?</string>
+    <string id="30014">Cannot record broadcast "{0}"!</string>
+    <string id="30015">"{0}" is scheduled for recording</string>
+    <string id="30016">Broadcasts from {0}</string>
+    <string id="30017">Broadcasts from {0}</string>
+    <string id="30018">List of channels</string>
+    <string id="30019">Search broadcasts</string>
+    <string id="30020">Found {0} matching broadcasts for search term "{1}"</string>
+    <string id="30021">No matching broadcasts found for search term "{0}"!</string>
 
-  <!-- view: "/": 30100-30199 -->
-  <string id="30100">My BongSpace</string>
-  <string id="30101">TV Program Guide</string>
-  <string id="30102">Search Broadcasts</string>
-
-  <!-- view "/view/recordings":  30200-30299  -->
-  <string id="30200">Refresh List of Recordings</string>
-  <string id="30201">Delete Recording</string>
-  <string id="30202">Pending</string>
-
-  <!-- view "/view/channels":  30300-30399  -->
-  <!-- nothing -->
-
-  <!-- view "/view/search-epg": 30400-30499  -->
-  <!-- nothing -->
-
-  <!-- view "/view/broadcasts-per-channel":  30500-30599  -->
-  <string id="30500"> .. Next Days's Broadcasts</string>
-
-  <!-- action "/action/create-recording": 30600-30699 -->
-  <string id="30600">'{title}' successfully scheduled!</string>
-  <string id="30601">Recording failed</string>
-  <string id="30602">BongSpace full, recording cannot be programmed!</string>
-  <string id="30603">Recording cannot be programmed!</string>
-  <string id="30604">Delete recordings from BongSpace, first.</string>
-  <string id="30605">Yes, go to my BongSpace</string>
-  <string id="30606">No, stay here</string>
-
-  <!-- action "/action/delete-recording": 30700-30799 -->
-  <string id="30700">Delete Recording?</string>
-  <string id="30701">Delete '{title}' from BongSpace?</string>
-  <string id="30702">'{title}' successfully deleted from BongSpace!</string>
+    <!-- settings stuff: [30500..30999]} -->
+    <string id="30500">General</string>
+    <string id="30501">Username</string>
+    <string id="30502">Password</string>
+    <string id="30510">Advanced</string>
+    <string id="30511">Force View Mode</string>
+    <string id="30512">View Mode ID</string>
+    <string id="30513">Force Content Type</string>
+    <string id="30514">Content Type</string>
+    <string id="30515">Show all available broadcast details</string>
 
 </strings>

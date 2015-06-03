@@ -1,308 +1,313 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import time
+
+from xbmcswift2 import xbmc
+from xbmcswift2 import xbmcgui
+
+import functools
+import operator
 import os
-
+import sys
+import time
 import xbmcswift2
-from xbmcswift2 import actions
-from xbmcswift2 import xbmc, xbmcgui
-from lib import pybongtvapi
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'resources', 'lib'))
+
+import pybongtvapi
 
 plugin = xbmcswift2.Plugin()
-addon_icon = plugin._addon.getAddonInfo("icon")
+addon_icon = plugin.addon.getAddonInfo('icon')
+addon_name = plugin.addon.getAddonInfo('name')
 
-pybongtvapi.COOKIE_PATH = os.path.join(os.path.dirname(plugin.storage_path), "..", ".pybongtvapi.session-cookie")
+pybongtvapi.DEFAULT_COOKIE_DIR = os.path.join(plugin.storage_path, '..', '.pybongtvapi', 'cookies')
 
-CONTENT_TYPES = VIDEOS, EPISODES, MOVIES = "videos", "episodes", "movies"
+CONTENT_TYPES = VIDEOS, EPISODES, MOVIES = 'videos', 'episodes', 'movies'
 
-
-def tr(string_id, **kw):
-    return plugin.get_string(int(string_id)).encode("utf-8").format(**kw)
-
-
-def redirect(url):
-    xbmc.executebuiltin(actions.update_view(url))
-
-
-def on_authentication_error(yeslabel=None, nolabel=None, url=None):
-    if xbmcgui.Dialog().yesno(tr(30018), tr(30019), line3=tr(30020), yeslabel=yeslabel or '', nolabel=nolabel or ''):
-        if os.path.isfile(pybongtvapi.COOKIE_PATH):
-            os.remove(pybongtvapi.COOKIE_PATH)
-        plugin.open_settings()
-        if url:
-            redirect(url)
-
-
-class Settings(object):
-    @property
-    def content_type(self):
-        return plugin.get_setting("content_type", converter=str)
-
-    @property
-    def force_content_type(self):
-        return plugin.get_setting("force_content_type", converter=bool)
-
-    @property
-    def view_mode_id(self):
-        return plugin.get_setting("view_mode_id", converter=int)
-
-    @property
-    def force_view_mode(self):
-        return plugin.get_setting("force_view_mode", converter=bool)
-
-    @property
-    def use_thumb_as_fanart(self):
-        return plugin.get_setting("use_thumb_as_fanart", converter=bool)
-
-    @property
-    def cache_thumbs_locally(self):
-        return plugin.get_setting("cache_thumbs_locally", converter=bool)
-
-    @property
-    def username(self):
-        # when username is not set, then 'foo' will trigger an authentication error, and
-        # user is prompted to re-enter his username
-        return plugin.get_setting("username", converter=str) or 'foo'
-
-    @property
-    def password(self):
-        # when password is not set, then 'foo' will trigger an authentication error, and
-        # user is prompted to re-enter his password
-        return plugin.get_setting("password", converter=str) or 'foo'
-
-    @property
-    def preferred_qualities(self):
-        return plugin.get_setting("preferred_qualities", converter=str).split("+")
-
-    @property
-    def use_extended_broadcast_details(self):
-        return plugin.get_setting('use_extended_broadcast_details', converter=bool)
+# xbmc translation identifiers
+# the addon's translation identifiers
+TR_AUTHORIZATION_ERROR = 30000  # en: Authorization Error! de: Anmeldung fehlgeschlagen!
+TR_UPDATE_CREDENTIALS = 30001 # en: Please update your BONG.TV username and password, de: Bitte bong.tv-Benutzernamen und -Passwort aktualisieren
+TR_BONGSPACE = 30002  # en: BongSpace de: BongSpace
+TR_BONGGUIDE = 30003  # en: BongGuide de: BongGuide
+TR_SEARCH_BROADCASTS = 30004  # en: Search broadcasts de: Suche Sendungen
+TR_X_BROADCASTS_RECORDED = 30005  # en: {0} broadcasts recorded de: {0} Sendungen aufgenommen
+TR_MANAGE_X_BROADCASTS = 30006  # en: Manage {0} broadcasts de: {0} Sendungen verwalten
+TR_NO_RECORDINGS_FOUND = 30007  # en: No recordings found! de: Keine Aufnahmen gefunden!
+TR_TITLE_DELETE_RECORDING = 30008  # en: Delete Recording? de: Aufnahme löschen?
+TR_DELETE_RECORDING = 30009  # en: Delete recording "{0}"? de: Aufnahme "{0}" löschen?
+TR_CANNOT_DELETE_RECORDING = 30010  # en: Cannot delete recording "{0}"! de: "{0}" kann nicht gelöscht werden!
+TR_RECORDING_DELETED = 30011  # en: "{0}" deleted successfully. de: "{0}" erfolgreich gelöscht.
+TR_TITLE_RECORD_BROADCAST = 30012  # en: Record broadcast? de: Aufnahme tätigen?
+TR_RECORD_BROADCAST = 30013  # en: Record broadcast "{0}"? de: Sendung "{0}" aufzeichnen?
+TR_CANNOT_RECORD_BROADCAST = 30014  # en: Cannot record broadcast "{0}"! de: "{0}" kann nicht aufgezeichnet werden!
+TR_WILL_RECORD_BROADCAST = 30015  # en: "{0}" is scheduled for recording de: "{0}" wird aufgezeichnet
+TR_NEXT_DAYS_BROADCASTS = 30016  # en: Broadcasts from {0} de: Sendungen vom {0}
+TR_PREVIOUS_DAYS_BROADCASTS = 30017  # en: Broadcasts from {0} de: Sendungen vom {0}
+TR_LIST_OF_BROADCASTS = 30018  # en: List of channels de: Senderliste
+TR_TITLE_SEARCH_MATCHING_BROADCASTS = 30019  # en: Search broadcasts de: Suche Sendungen
+TR_X_MATCHING_BROADCASTS_FOUND = 30020 # en: Found {0} matching broadcasts for search term "{1}" de: {0} passende Sendungen für den Suchbegriff "{1}" gefunden
+TR_NO_MATCHING_BROADCASTS_FOUND = 30021  # en: No matching broadcasts found for search term "{0}" de: Keine passenden Sendungen für den Suchbegriff "{0}" gefunden!
 
 
-class API(object):
-    @property
-    def api(self):
-        return pybongtvapi.API(Settings().username, Settings().password)
-
-    @property
-    def epg(self):
-        return pybongtvapi.EPG(self.api)
-
-    @property
-    def pvr(self):
-        return pybongtvapi.PVR(self.api)
+# xbmc utils/helpers
+def get_view_mode_id():
+    if plugin.get_setting('force_view_mode', converter=bool):
+        return plugin.get_setting('view_mode_id', converter=int)
 
 
-def get_broadcasts(channel_id, offset=0):
-    channel_id = int(channel_id)
-    offset = int(offset)
-    channel = API().epg.get_channel(channel_id)
-    return tuple(channel.get_broadcasts(offset=offset))
+def get_content_type():
+    if plugin.get_setting('force_content_type', converter=bool):
+        return plugin.get_setting('content_type', converter=str)
 
 
-def get_broadcast_details(broadcast):
-    metadata = dict(
-        genre=", ".join(broadcast.categories),
+def use_extended_broadcast_details():
+    return plugin.get_setting('use_extended_broadcast_details', converter=bool)
+
+
+def normalize_title(broadcast, include_time=True, include_channel_name=False):
+    label = ('{0.title}: {0.subtitle}'.format(broadcast) if broadcast.is_tvshow() else broadcast.title)
+    if include_time:
+        label = time.strftime('%d.%m, %H:%M: ', broadcast.starts_at) + label
+    if include_channel_name:
+        label = (broadcast.channel_name + (', ' if include_time else ': ') + label)
+    return label
+
+
+def new_broadcast_item(broadcast, path=None, include_time=True, include_channel_name=False):
+    label = normalize_title(broadcast, include_time=include_time, include_channel_name=include_channel_name)
+    broadcast_details = dict(
+        genre=', '.join(broadcast.categories),
         year=broadcast.production_year,
         episode=broadcast.episode,
         season=broadcast.season,
-        plot=broadcast.outline,
+        plot=broadcast.plot if use_extended_broadcast_details() else broadcast.outline,
         plotoutline=broadcast.outline,
         title=broadcast.subtitle if broadcast.is_tvshow() else broadcast.title,
         duration=broadcast.duration,
         tagline=broadcast.subtitle,
-        tvshowtitle=broadcast.title if broadcast.is_tvshow() else broadcast.title,
-        aired=time.strftime("%Y-%m-%d", broadcast.starts_at),
+        tvshowtitle=broadcast.title if broadcast.is_tvshow() else None,
+        aired=time.strftime('%Y-%m-%d', broadcast.starts_at),
     )
-    if Settings().use_extended_broadcast_details:
-        expensive_metadata = dict(
-            rating=broadcast.rating,
-            director=", ".join(broadcast.directors),
-            cast=", ".join("{0.name}".format(actor) for actor in broadcast.actors),
-            castandrole=", ".join("{0.name}|{0.role}".format(actor) for actor in broadcast.actors),
-            writer=", ".join(broadcast.authors),
-            plot=broadcast.plot or broadcast.hint,
-            votes=broadcast.votes,
-        )
-        metadata.update(expensive_metadata)
-    return metadata
+    properties = dict(fanart_image=broadcast.thumb_url)
+    return dict(label=label, label2=broadcast.subtitle, icon=broadcast.channel_logo_url, thumbnail=broadcast.thumb_url,
+                path=path, properties=properties, info=broadcast_details, info_type='video')
 
 
-def new_image_url(url, timeout=None, default="DefaultVideo.png"):
-    if url:
-        thumbs_dir = os.path.join(os.path.dirname(plugin.storage_path), "..", "thumbs")
-        if not os.path.isdir(thumbs_dir):
-            os.makedirs(thumbs_dir)
-        new_url = os.path.join(thumbs_dir, "thumb-{0}.jpg".format(hash(url)))
-        if os.path.isfile(new_url):
-            return new_url
-        elif Settings().cache_thumbs_locally:
-            import httplib, urlparse
+def new_recording_item(recording, path=None, include_time=True, include_channel_name=False):
+    item = new_broadcast_item(recording, path=path, include_time=include_time,
+                              include_channel_name=include_channel_name)
+    if recording.is_recorded() and path is None:
+        item.update(is_playable=True, path=recording.url)
+    elif recording.is_recorded() and path is not None:
+        item.update(label=' * ' + item['label'])
+    return item
 
-            (_, netloc, path, _, _) = urlparse.urlsplit(url)
-            conn = httplib.HTTPConnection(netloc, timeout=timeout)
+
+def new_channel_item(channel, path):
+    return dict(label=channel.name, icon=channel.logo_url, thumbnail=channel.logo_url, path=path, info_type='video')
+
+
+def finish(items, content_type=None, view_mode_id=None):
+    if content_type in CONTENT_TYPES or get_content_type():
+        plugin.set_content(content_type if content_type in CONTENT_TYPES else get_content_type())
+    return plugin.finish(items, view_mode=view_mode_id or get_view_mode_id())
+
+
+def notify(msg):
+    if msg and isinstance(msg, basestring):
+        xbmc.executebuiltin('Notification("' + addon_name + '", "' + msg + '", "5000", "' + addon_icon + '")')
+
+
+def refresh_view(msg=None):
+    if msg and isinstance(msg, basestring):
+        notify(msg)
+    xbmc.executebuiltin('Container.Refresh')
+
+
+def update_view(url, msg=None):
+    if not isinstance(url, basestring):
+        raise TypeError()
+    if msg and isinstance(msg, basestring):
+        notify(msg)
+    xbmc.executebuiltin('Container.Update(' + url + ')')
+
+
+def tr(msg_id, *a, **kw):
+    return (plugin.get_string(int(msg_id)) or '').encode('utf-8').format(*a, **kw)
+
+
+# bong.tv utils/helpers
+def new_api():
+    return pybongtvapi.API(credentials=pybongtvapi.UserCredentials(plugin.get_setting('username'),
+                                                                   plugin.get_setting('password')))
+
+
+def new_epg():
+    return pybongtvapi.EPG(new_api())
+
+
+def new_pvr():
+    return pybongtvapi.PVR(new_api())
+
+
+def requires_authorization(wrapped):
+    def wrapper(*a, **kw):
+        for _ in range(3):
             try:
-                conn.request("GET", path)
-                response = conn.getresponse()
-                if response.status == 200:
-                    if response.getheader("Content-Length"):
-                        return url
-                    else:
-                        plugin.log.warning("No Content-Length header returned for image url '{0}', caching image on disk to '{1}' ..".format(url, new_url))
-                        with open(new_url, mode="wb") as f:
-                            while True:
-                                data = response.read(2048)
-                                if data:
-                                    f.write(data)
-                                else:
-                                    break
-                        return new_url
-                raise IOError("Cannot load image, HTTP response code={0.status} {0.reason}".format(response))
-            except Exception, error:
-                plugin.log.error("Cannot load image from '{0}': {1}".format(url, error))
-            finally:
-                conn.close()
-    # in any other case, return an empty string as url, indicating that there is no image url
-    return default
+                return wrapped(*a, **kw)
+            except pybongtvapi.AuthorizationError:
+                xbmcgui.Dialog().ok(tr(TR_AUTHORIZATION_ERROR), tr(TR_UPDATE_CREDENTIALS))
+                plugin.open_settings()
+
+    return functools.update_wrapper(wrapper, wrapped)
 
 
-def make_broadcast_title(broadcast, title_prefix=None, with_starts_at=True):
-    def produce():
-        if title_prefix:
-            yield title_prefix
-            yield ': '
-        if with_starts_at:
-            yield '{0.starts_at.tm_mday:0>2}.{0.starts_at.tm_mon:0>2}, {0.starts_at.tm_hour:0>2}:{0.starts_at.tm_min:0>2}'.format(broadcast)
-            yield ' - '
-        yield '{0.title}: {0.subtitle}'.format(broadcast) if broadcast.subtitle else broadcast.title
-
-    return ''.join(produce())
+@requires_authorization
+def get_recordings():
+    return new_pvr().recordings
 
 
-def make_list_item(broadcast, path, is_playable=False, thumb_url=None, bg_image_url=None, context_menu=None, replace_context_menu=False, title_prefix=None):
-    properties = dict()
-    thumb_url = thumb_url or new_image_url(broadcast.thumb_url)
-    if Settings().use_thumb_as_fanart:
-        properties.update(fanart_image=thumb_url)
-    elif bg_image_url:
-        properties.update(fanart_image=bg_image_url or thumb_url)
-    return dict(label=make_broadcast_title(broadcast, title_prefix=title_prefix), label2=broadcast.subtitle, icon=thumb_url, thumbnail=thumb_url, path=path, is_playable=is_playable, properties=properties, context_menu=context_menu,
-                replace_context_menu=replace_context_menu, info_type="video", info=get_broadcast_details(broadcast))
+@requires_authorization
+def get_channels():
+    return new_epg().channels
 
 
-def finish(items, sort_methods=None, succeeded=True, update_listing=False, cache_to_disc=True, view_mode=None, content_type=None):
-    applied_content_type = content_type if isinstance(content_type, basestring) else (Settings().content_type if Settings().force_content_type else VIDEOS)
-    if applied_content_type:
-        plugin.set_content(applied_content_type)
-    applied_view_mode = view_mode if isinstance(view_mode, int) else (Settings().view_mode_id if Settings().force_view_mode else None)
-    return plugin.finish(items, sort_methods=sort_methods, succeeded=succeeded, update_listing=update_listing, cache_to_disc=cache_to_disc, view_mode=applied_view_mode)
+@requires_authorization
+def get_channel(channel_id):
+    return new_epg().get_channel(channel_id)
 
 
-@plugin.route("/action/create-recording/<broadcast_id>")
-def action_create_recording(broadcast_id):
-    try:
-        recording = API().pvr.create_recording(int(broadcast_id))
-        assert recording is not None
-    except pybongtvapi.CannotCreateRecordingError:
-        if xbmcgui.Dialog().yesno(tr(30601), tr(30602), tr(30604), yeslabel=tr(30605), nolabel=tr(30606)):
-            redirect(plugin.url_for('view_recordings'))
-    except (pybongtvapi.Error, AssertionError):
-        xbmcgui.Dialog().ok(tr(30601), tr(30603))
-    else:
-        title = make_broadcast_title(recording, with_starts_at=False)
-        plugin.notify(tr(30600, title=title), image=addon_icon)
-
-
-@plugin.route("/action/delete-recording/<recording_id>/<recording_title>")
-def action_delete_recording(recording_id, recording_title):
-    if xbmcgui.Dialog().yesno(tr(30700), tr(30701, title=recording_title)):
-        API().pvr.delete_recording(int(recording_id))
-        redirect(plugin.url_for('view_recordings'))
-        plugin.notify(tr(30702, title=recording_title), image=addon_icon)
-
-
-@plugin.route("/")
-def view_index():
+# addon routing
+@plugin.route('/')
+def page_index():
     items = [
-        dict(label=tr(30100), icon="DefaultMovies.png", thumbnail="DefaultMovies.png", path=plugin.url_for("view_recordings")),
-        dict(label=tr(30101), icon="DefaultTVShows.png", thumbnail="DefaultTVShows.png", path=plugin.url_for("view_channels")),
-        dict(label=tr(30102), icon="DefaultVideoPlugins.png", thumbnail="DefaultVideoPlugins.png", path=plugin.url_for("view_search_epg")),
+        dict(label=tr(TR_BONGSPACE), path=plugin.url_for('page_pvr')),
+        dict(label=tr(TR_BONGGUIDE), path=plugin.url_for('page_epg')),
+        dict(label=tr(TR_SEARCH_BROADCASTS), path=plugin.url_for('page_search')),
     ]
-    return finish(items, content_type=VIDEOS)
+    return finish(items)
 
 
-@plugin.route("/view/recordings")
-def view_recordings():
-    def produce_items():
-        for recording in API().pvr.recordings:
-            delete_recording_url = plugin.url_for("action_delete_recording", recording_id=recording.recording_id, recording_title=make_broadcast_title(recording, with_starts_at=False))
-            context_menu = [
-                [tr(30200), actions.update_view(plugin.url_for("view_recordings"))],
-                [tr(30201), actions.background(delete_recording_url)],
-            ]
-            if recording.is_recorded():
-                path = recording.get_url(preferred_qualities=Settings().preferred_qualities)
-                is_playable = True
-                title_prefix = None
-            else:
-                path = delete_recording_url
-                is_playable = False
-                title_prefix = tr(30202)
-            yield make_list_item(recording, path, is_playable=is_playable, context_menu=context_menu, title_prefix=title_prefix)
+@plugin.route('/pvr')
+def page_pvr():
+    def producer():
+        if recorded:
+            yield dict(label=tr(TR_X_BROADCASTS_RECORDED, len(recorded)), path=plugin.url_for('page_pvr_recorded'))
+        yield dict(label=tr(TR_MANAGE_X_BROADCASTS, len(recordings)), path=plugin.url_for('page_pvr_manage'))
 
-    try:
-        items = tuple(produce_items())
-    except pybongtvapi.AuthenticationError:
-        on_authentication_error(url=plugin.url_for('view_recordings'))
+    recordings = sorted(get_recordings(), key=operator.attrgetter('starts_at'))
+    recorded = [recording for recording in recordings if recording.is_recorded()]
+    if recordings:
+        return finish(tuple(producer()))
     else:
-        return finish(items, content_type=EPISODES)
+        update_view(plugin.url_for('page_index'), msg=tr(TR_NO_RECORDINGS_FOUND))
 
 
-@plugin.route("/view/channels")
-def view_channels():
-    def produce_items():
-        for channel in API().epg.channels:
-            path = plugin.url_for("view_broadcasts_per_channel", channel_id=channel.channel_id, offset=0)
-            yield dict(label=channel.name, icon=channel.logo_url, thumbnail=channel.logo_url, path=path)
+@plugin.route('/pvr/recorded')
+def page_pvr_recorded():
+    def producer():
+        for recorded_recording in recorded:
+            yield new_recording_item(recorded_recording)
 
-    try:
-        items = tuple(produce_items())
-    except pybongtvapi.AuthenticationError:
-        on_authentication_error(url=plugin.url_for('view_channels'))
+    recordings = sorted(get_recordings(), key=operator.attrgetter('starts_at'))
+    recorded = [recording for recording in recordings if recording.is_recorded()]
+    if recorded:
+        return finish(tuple(producer()), content_type='movies', view_mode_id=504)
     else:
-        return finish(items, content_type=VIDEOS)
+        update_view(plugin.url_for('page_pvr'), msg=tr(TR_NO_RECORDINGS_FOUND))
 
 
-@plugin.route("/view/search-epg")
-def view_search_epg():
-    def produce_items():
-        search_pattern = plugin.keyboard(heading="Search broadcast")
-        for broadcast in API().epg.search_broadcast(search_pattern):
-            path = plugin.url_for("action_create_recording", broadcast_id=broadcast.broadcast_id)
-            yield make_list_item(broadcast, path, bg_image_url=broadcast.channel_logo_url)
+@plugin.route('/pvr/manage')
+def page_pvr_manage():
+    def producer():
+        for recording in recordings:
+            path = plugin.url_for('action_delete_recording', recording_id=recording.recording_id,
+                                  recording_title=normalize_title(recording, include_time=False))
+            yield new_recording_item(recording, path=path, include_channel_name=True)
 
-    try:
-        items = tuple(produce_items())
-    except pybongtvapi.AuthenticationError:
-        on_authentication_error(url=plugin.url_for('view_search_epg'))
-    return finish(items, content_type=EPISODES)
-
-
-@plugin.route("/view/broadcasts-per-channel/<channel_id>/<offset>")
-def view_broadcasts_per_channel(channel_id, offset=0):
-    def produce_items():
-        channel = API().epg.get_channel(channel_id)
-        for broadcast in channel.get_broadcasts_per_day(offset=int(offset)):
-            path = plugin.url_for("action_create_recording", broadcast_id=broadcast.broadcast_id)
-            yield make_list_item(broadcast, path, bg_image_url=channel.logo_url)
-        url_for_next_days_broadcasts = plugin.url_for("view_broadcasts_per_channel", channel_id=int(channel_id), offset=int(offset) + 1)
-        yield dict(label=tr(30500), icon="DefaultMovies.png", thumbnail="DefaultMovies.png", path=url_for_next_days_broadcasts)
-
-    items = tuple(produce_items())
-    finish(items, content_type=EPISODES)
+    recordings = sorted(get_recordings(), key=operator.attrgetter('starts_at'))
+    if recordings:
+        return finish(tuple(producer()), content_type='movies', view_mode_id=504)
+    else:
+        update_view(plugin.url_for('page_pvr'), msg=tr(TR_NO_RECORDINGS_FOUND))
 
 
-if __name__ == "__main__":
+@plugin.route('/action/delete-recording/<recording_id>/<recording_title>')
+def action_delete_recording(recording_id, recording_title):
+    if xbmcgui.Dialog().yesno(tr(TR_TITLE_DELETE_RECORDING), tr(TR_DELETE_RECORDING, recording_title)):
+        try:
+            new_pvr().delete_recording(int(recording_id))
+        except pybongtvapi.Error:
+            refresh_view(msg=tr(TR_CANNOT_DELETE_RECORDING, recording_title))
+        else:
+            refresh_view(msg=tr(TR_RECORDING_DELETED, recording_title))
+
+
+@plugin.route('/action/create-recording/<broadcast_id>/<broadcast_title>')
+def action_create_recording(broadcast_id, broadcast_title):
+    if xbmcgui.Dialog().yesno(tr(TR_TITLE_RECORD_BROADCAST), tr(TR_RECORD_BROADCAST, broadcast_title)):
+        try:
+            recording = new_pvr().create_recording(int(broadcast_id))
+            assert isinstance(recording, pybongtvapi.Recording)
+        except (pybongtvapi.Error, AssertionError):
+            refresh_view(msg=tr(TR_CANNOT_RECORD_BROADCAST, broadcast_title))
+        else:
+            notify(tr(TR_WILL_RECORD_BROADCAST, broadcast_title))
+
+@plugin.route('/epg')
+def page_epg():
+    def producer():
+        for channel in get_channels():
+            yield new_channel_item(channel, path=plugin.url_for('page_epg_channel', channel_id=channel.channel_id,
+                                                                offset=0))
+    items = tuple(producer())
+    return finish(items)
+
+
+@plugin.route('/epg/<channel_id>/<offset>')
+def page_epg_channel(channel_id, offset):
+    def producer():
+        channel = get_channel(channel_id)
+        broadcasts = channel.get_broadcasts_per_day(offset=int(offset))
+        for broadcast in broadcasts:
+            path = plugin.url_for('action_create_recording', broadcast_id=broadcast.broadcast_id,
+                                  broadcast_title=normalize_title(broadcast, include_time=False))
+            yield new_broadcast_item(broadcast, path=path)
+        if broadcasts:
+            time.time() + (int(offset) + 1)
+            next_day = time.strftime('%d.%m.', time.localtime(time.time() + ((int(offset) + 1) * 3600 * 24)))
+            next_day_label = tr(TR_NEXT_DAYS_BROADCASTS, next_day)
+            yield dict(label=next_day_label, path=plugin.url_for('page_epg_channel', channel_id=channel_id,
+                                                                 offset=int(offset) + 1))
+        if int(offset) >= 1:
+            time.time() + (int(offset) + 1)
+            previous_day = time.strftime('%d.%m.', time.localtime(time.time() + ((int(offset) - 1) * 3600 * 24)))
+            previous_day_label = tr(TR_PREVIOUS_DAYS_BROADCASTS, previous_day)
+            yield dict(label=previous_day_label, path=plugin.url_for('page_epg_channel', channel_id=channel_id,
+                                                                     offset=int(offset) - 1))
+        yield dict(label=tr(TR_LIST_OF_BROADCASTS), path=plugin.url_for('page_epg'))
+    items = tuple(producer())
+    return finish(items, content_type=MOVIES)
+
+@plugin.route('/search')
+def page_search():
+    def producer():
+        for broadcast in new_epg().search_broadcasts(search_pattern):
+            path = plugin.url_for('action_create_recording', broadcast_id=broadcast.broadcast_id,
+                                  broadcast_title=normalize_title(broadcast, include_time=True,
+                                                                  include_channel_name=True))
+            yield new_broadcast_item(broadcast, path=path, include_time=True, include_channel_name=True)
+
+    search_pattern = (plugin.keyboard(heading=tr(TR_TITLE_SEARCH_MATCHING_BROADCASTS)) or '').strip()
+    if search_pattern:
+        items = tuple(producer())
+        if items:
+            notify(tr(TR_X_MATCHING_BROADCASTS_FOUND, len(items), search_pattern))
+            return finish(items, content_type='movies', view_mode_id=504)
+        else:
+            refresh_view(msg=tr(TR_NO_MATCHING_BROADCASTS_FOUND, search_pattern))
+
+
+if __name__ == '__main__':
     plugin.run()
