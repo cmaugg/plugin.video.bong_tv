@@ -7,7 +7,7 @@
 # Installation
 Dieses Addon ist (noch) nicht erhältlich über die Standard-XBMC/Kodi-Addon-Repositories. Stattdessen muss eine ZIP-Datei auf Ihre XBMC/Kodi-Maschine heruntergeladen werden und über XBMC/Kodi installiert werden. Keine Angst - das ist nicht so kompliziert, wie es klingt:
 
-1. Laden Sie die [aktuellste stabile Version](https://github.com/cmaugg/plugin.video.bong_tv/archive/2.0) oder die [aktuellste Entwicklerversion](https://github.com/cmaugg/plugin.video.bong_tv/archive/master.zip) herunter.
+1. Laden Sie die [aktuellste stabile Version](https://github.com/cmaugg/plugin.video.bong_tv/archive/2.0.zip) oder die [aktuellste Entwicklerversion](https://github.com/cmaugg/plugin.video.bong_tv/archive/master.zip) herunter.
 2. In XBMC/Kodi navigieren Sie zu `System`-->`Einstellungen`-->`Addons`-->`Aus ZIP-Datei installieren`, wählen die heruntergeladene ZIP-Datei aus und bestätigen mit `OK`.
 
 This addon is not (yet) available through the standard XBMC/Kodi addon repositories. Instead, you need to download a zip file to your XBMC/Kodi machine and install it from XBMC/Kodi itself. Fear not - it's not as complicated as it sounds:
