@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-  <category label="30000">
-    <setting label="30001" id="username" type="text"  enable="!eq(-1,)" />
-    <setting label="30002" id="password" type="text" option="hidden" enable="!eq(-1,)" />
-    <setting type="sep" />
-    <setting label="30003" id="preferred_qualities" type="labelenum" values="NQ|HQ|NQ+HQ|HQ+HD|NQ+HQ+HD" default="NQ+HQ+HD" />
-
+  <category label="30500">
+    <setting label="30501" id="username" type="text"  default="" />
+    <setting label="30502" id="password" type="text" option="hidden" default="" />
   </category>
-  <category label="30010">
-    <setting label="30011" id="force_view_mode" type="bool" default="true"/>
-    <setting label="30012" id="view_mode_id" type="number" default="504"/>
+  <category label="30510">
+    <setting label="30511" id="force_view_mode" type="bool" default="true"/>
+    <setting label="30512" id="view_mode_id" type="number" default="504"/>
     <setting type="sep" />
-    <setting label="30013" id="force_content_type" type="bool" default="true"/>
-    <setting label="30014" id="content_type" type="labelenum" values="videos|movies|episodes" default="episodes"/>
+    <setting label="30513" id="force_content_type" type="bool" default="true"/>
+    <setting label="30514" id="content_type" type="labelenum" values="videos|movies|episodes" default="episodes"/>
     <setting type="sep" />
-    <setting label="30015" id="use_thumb_as_fanart" type="bool" default="false" />
-    <setting type="sep" />
-    <setting label="30016" id="cache_thumbs_locally" type="bool" default="false" />
-    <setting type="sep" />
-    <setting label="30017" id="use_extended_broadcast_details" type="bool" default="true" />
-
+    <setting label="30515" id="use_extended_broadcast_details" type="bool" default="false" />
   </category>
 </settings>
